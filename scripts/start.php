@@ -1,6 +1,6 @@
 <?php
 // check if there was a post to initialize the game  
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if($_SERVER["REQUEST_METHOD"] == "POST") {
     // get total questiones, if null? value will be 5
     $total_questions = intval($_POST['text_total_questions'] ?? 5);
 
@@ -10,6 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit;
 
 }
+
 
 function prepare_game($total_questions)
 {
@@ -27,8 +28,56 @@ function prepare_game($total_questions)
     }
 
     // define first data for $questions
-    $question = [];
     foreach ($ids as $id) {
+
+        // create an array with all country/capitals
+        $indices = range(0, count($capitals) - 1);
+
+        // remove $id from question
+        unset($indices[$id]);
+
+
+        shuffle($indices);
+
+        // take the first 2 $indices from the shuflled array
+        $alternativas = array_slice($indices, 0, 2);
+
+        // merge the response correct with responses incorrects
+        $answears = array_merge([$id], $alternativas);
+
+        shuffle($answears);
+
+        // bluid question
+        $questions[] = [
+            'question' => $capitals[$id][0], // name of country
+            'correct_answear' => $id,        // answear correct
+            'answears' => $answears          // alternatives
+        ];
+       
+
+        
+        /* segunda
+        $answears = [];
+        $answears[] = $id;
+
+        while(count($answears) < 3) {
+            $tem = rand(0, count($capitals) -1);
+            if (!in_array($tem, $answears)) {
+                $answears[] = $tem;
+            }
+        }
+
+        shuffle($answears);
+
+        $questions[] = [
+            'question' => $capitals[$id][0],
+            'correct_answear' =>  $id,
+            'answears' => $answears
+        ];
+
+        */
+
+
         /*
         como eu fiz primeiro
 
@@ -56,14 +105,25 @@ function prepare_game($total_questions)
             'answears' => $answear
         ];
         */
-        
-        
-
 
     }
-    print_r($question);
+    $_SESSION['questions'] = $questions;
+
+    $_SESSION['game'] = [
+        'total_questions' => $total_questions,
+        'current_question' => 0,
+        'correct_answears' => 0,
+        'incorrect_answears' => 0,
+    ];
+
+
+
+
+
 
 }
+
+
 
 
 ?>
@@ -80,7 +140,7 @@ function prepare_game($total_questions)
                 </div>
                 <div class="row justify-content-center">
                     <div class="col-4 ">
-                        <form action="index.php?route=start" method="post">
+                        <form action="index.php?route=game" method="post">
                             <div class="mb-3">
                                 <label for="text_total_questions" class="form-label">Número de Questões</label>
                                 <input type="number" name="text_total_questions"
